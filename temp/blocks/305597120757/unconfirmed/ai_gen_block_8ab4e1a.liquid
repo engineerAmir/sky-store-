@@ -1,6 +1,362 @@
+{% doc %}
+  @prompt
+    i need hero section 
+    is fullscreen iameges 
+    transction betwen images is fade 
+    loob 
+    do not stop untill user click 
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-hero-slider-{{ ai_gen_id }} {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .ai-hero-slider__slides-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .ai-hero-slider__slide-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity {{ block.settings.transition_duration }}s ease-in-out;
+  }
+
+  .ai-hero-slider__slide-{{ ai_gen_id }}.active {
+    opacity: 1;
+    z-index: 1;
+  }
+
+  .ai-hero-slider__slide-{{ ai_gen_id }} img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .ai-hero-slider__placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .ai-hero-slider__placeholder-{{ ai_gen_id }} svg {
+    width: 100%;
+    height: 100%;
+    max-width: 500px;
+    max-height: 500px;
+  }
+
+  .ai-hero-slider__empty-state-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 20px;
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .ai-hero-slider__pause-button-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+    z-index: 10;
+    background-color: {{ block.settings.button_background_color }};
+    color: {{ block.settings.button_text_color }};
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+  }
+
+  .ai-hero-slider__pause-button-{{ ai_gen_id }}:hover {
+    transform: scale(1.1);
+    background-color: {{ block.settings.button_hover_color }};
+  }
+
+  .ai-hero-slider__pause-button-{{ ai_gen_id }} svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-hero-slider__pause-button-{{ ai_gen_id }} {
+      width: 50px;
+      height: 50px;
+      bottom: 20px;
+      right: 20px;
+    }
+
+    .ai-hero-slider__pause-button-{{ ai_gen_id }} svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+{% endstyle %}
+
+<hero-slider-{{ ai_gen_id }}
+  class="ai-hero-slider-{{ ai_gen_id }}"
+  data-interval="{{ block.settings.slide_interval }}"
+  data-transition="{{ block.settings.transition_duration }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="ai-hero-slider__slides-{{ ai_gen_id }}">
+    {% liquid
+      assign has_images = false
+      for i in (1..5)
+        assign image_key = 'image_' | append: i
+        if block.settings[image_key] != blank
+          assign has_images = true
+          break
+        endif
+      endfor
+    %}
+
+    {% if has_images %}
+      {% for i in (1..5) %}
+        {% liquid
+          assign image_key = 'image_' | append: i
+          assign image = block.settings[image_key]
+        %}
+
+        {% if image != blank %}
+          <div class="ai-hero-slider__slide-{{ ai_gen_id }} {% if forloop.first %}active{% endif %}" data-slide="{{ forloop.index }}">
+            <img
+              src="{{ image | image_url: width: 2000 }}"
+              alt="{{ image.alt | escape }}"
+              loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+              width="{{ image.width }}"
+              height="{{ image.height }}"
+            >
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      <div class="ai-hero-slider__slide-{{ ai_gen_id }} active" data-slide="1">
+        <div class="ai-hero-slider__placeholder-{{ ai_gen_id }}">
+          {{ 'hero-apparel-1' | placeholder_svg_tag }}
+          <div class="ai-hero-slider__empty-state-{{ ai_gen_id }}">
+            Next, add images to create your hero slider
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if has_images %}
+    <button
+      class="ai-hero-slider__pause-button-{{ ai_gen_id }}"
+      aria-label="Pause slideshow"
+      data-state="playing"
+    >
+      <svg class="ai-hero-slider__pause-icon-{{ ai_gen_id }}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="6" y="4" width="4" height="16"></rect>
+        <rect x="14" y="4" width="4" height="16"></rect>
+      </svg>
+      <svg class="ai-hero-slider__play-icon-{{ ai_gen_id }}" style="display: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+    </button>
+  {% endif %}
+</hero-slider-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class HeroSlider{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.currentSlide = 0;
+        this.slides = [];
+        this.intervalId = null;
+        this.isPlaying = true;
+      }
+
+      connectedCallback() {
+        this.slides = Array.from(this.querySelectorAll('.ai-hero-slider__slide-{{ ai_gen_id }}'));
+        this.pauseButton = this.querySelector('.ai-hero-slider__pause-button-{{ ai_gen_id }}');
+        this.pauseIcon = this.querySelector('.ai-hero-slider__pause-icon-{{ ai_gen_id }}');
+        this.playIcon = this.querySelector('.ai-hero-slider__play-icon-{{ ai_gen_id }}');
+        
+        this.interval = parseInt(this.dataset.interval) * 1000;
+        this.transitionDuration = parseFloat(this.dataset.transition) * 1000;
+
+        if (this.slides.length > 1) {
+          this.startSlideshow();
+          this.setupEventListeners();
+        }
+      }
+
+      setupEventListeners() {
+        if (this.pauseButton) {
+          this.pauseButton.addEventListener('click', () => {
+            this.togglePlayPause();
+          });
+        }
+      }
+
+      startSlideshow() {
+        this.intervalId = setInterval(() => {
+          this.nextSlide();
+        }, this.interval);
+      }
+
+      stopSlideshow() {
+        if (this.intervalId) {
+          clearInterval(this.intervalId);
+          this.intervalId = null;
+        }
+      }
+
+      nextSlide() {
+        const currentSlideElement = this.slides[this.currentSlide];
+        currentSlideElement.classList.remove('active');
+
+        this.currentSlide = (this.currentSlide + 1) % this.slides.length;
+
+        const nextSlideElement = this.slides[this.currentSlide];
+        nextSlideElement.classList.add('active');
+      }
+
+      togglePlayPause() {
+        if (this.isPlaying) {
+          this.stopSlideshow();
+          this.isPlaying = false;
+          this.pauseButton.setAttribute('aria-label', 'Play slideshow');
+          this.pauseButton.dataset.state = 'paused';
+          this.pauseIcon.style.display = 'none';
+          this.playIcon.style.display = 'block';
+        } else {
+          this.startSlideshow();
+          this.isPlaying = true;
+          this.pauseButton.setAttribute('aria-label', 'Pause slideshow');
+          this.pauseButton.dataset.state = 'playing';
+          this.pauseIcon.style.display = 'block';
+          this.playIcon.style.display = 'none';
+        }
+      }
+
+      disconnectedCallback() {
+        this.stopSlideshow();
+      }
+    }
+
+    customElements.define('hero-slider-{{ ai_gen_id }}', HeroSlider{{ ai_gen_id }});
+  })();
+</script>
+
 {% schema %}
- {
-   "name": "AI_Block",
-   "tag": "shopify-ai-generated-block"
- }
+{
+  "name": "Fullscreen hero slider",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Images"
+    },
+    {
+      "type": "paragraph",
+      "content": "Add up to 5 images for the slideshow. Only images you add will be displayed."
+    },
+    {
+      "type": "image_picker",
+      "id": "image_1",
+      "label": "Image 1"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_2",
+      "label": "Image 2"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_3",
+      "label": "Image 3"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_4",
+      "label": "Image 4"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_5",
+      "label": "Image 5"
+    },
+    {
+      "type": "header",
+      "content": "Slideshow settings"
+    },
+    {
+      "type": "range",
+      "id": "slide_interval",
+      "label": "Slide interval",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "transition_duration",
+      "label": "Fade duration",
+      "min": 0.5,
+      "max": 3,
+      "step": 0.5,
+      "unit": "s",
+      "default": 1
+    },
+    {
+      "type": "header",
+      "content": "Pause button"
+    },
+    {
+      "type": "color",
+      "id": "button_background_color",
+      "label": "Background color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Icon color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_color",
+      "label": "Hover background color",
+      "default": "#333333"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Fullscreen hero slider"
+    }
+  ]
+}
 {% endschema %}
