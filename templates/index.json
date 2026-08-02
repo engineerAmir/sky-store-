@@ -36,7 +36,7 @@
             "button_hover_background": "#f0f0f0",
             "button_font_size": 16,
             "button_radius": 8,
-            "dot_active_color": "#ffffff"
+            "dot_active_color": "{{ settings.color_palette.background }}"
           },
           "blocks": {}
         }
@@ -50,11 +50,11 @@
         "horizontal_alignment": "flex-start",
         "vertical_alignment": "center",
         "align_baseline": false,
-        "horizontal_alignment_flex_direction_column": "flex-start",
+        "horizontal_alignment_flex_direction_column": "center",
         "vertical_alignment_flex_direction_column": "center",
         "gap": 12,
-        "section_width": "page-width",
-        "section_height": "",
+        "section_width": "full-width",
+        "section_height": "full-screen",
         "section_height_custom": 50,
         "background_media": "none",
         "background_color": "",
