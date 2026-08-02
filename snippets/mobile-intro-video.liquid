@@ -1,0 +1,201 @@
+{%- doc -%}
+  Renders a one-time, fullscreen intro video overlay for mobile visitors on the homepage.
+
+  - Intended to be rendered only from the homepage template (gate with `template.name == 'index'`
+    at the call site in theme.liquid).
+  - Visible only at viewports <= 768px. The video is never fetched on wider viewports.
+  - Plays once per browser tab session via sessionStorage.
+  - Autoplays muted + inline (iOS Safari / Android Chrome compatible), then fades out and removes
+    itself from the DOM on the `ended` event.
+  - Falls back to an immediate fade-out if autoplay is blocked, the video errors, it fails to
+    become ready within a short timeout, or `ended` never fires (max-duration safety timer).
+
+  @example
+  {% if template.name == 'index' %}
+    {% render 'mobile-intro-video' %}
+  {% endif %}
+{%- enddoc -%}
+
+<div
+  id="mobile-intro-video"
+  class="mobile-intro-video"
+  role="presentation"
+  aria-hidden="true"
+>
+  <video
+    class="mobile-intro-video__player"
+    muted
+    playsinline
+    webkit-playsinline
+    disablepictureinpicture
+    disableremoteplayback
+    preload="none"
+    aria-hidden="true"
+  >
+    <source
+      data-src="https://cdn.shopify.com/videos/c/o/v/a3fa08cadcb84373ac5859a97091de7c.mp4"
+      type="video/mp4"
+    >
+  </video>
+</div>
+
+{% style %}
+  /*
+    Hidden by default (no JS = no intro, nothing ever gets stuck on screen).
+    JS opts the element into visibility only for a first-time mobile session.
+  */
+  #mobile-intro-video {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647; /* same "must be above everything" value used in popover-polyfill.js */
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background-color: #000;
+    display: none;
+    opacity: 1;
+    transition: opacity 0.6s ease;
+    will-change: opacity;
+  }
+
+  #mobile-intro-video.mobile-intro-video--active {
+    display: block;
+  }
+
+  #mobile-intro-video.mobile-intro-video--hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #mobile-intro-video .mobile-intro-video__player {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    background-color: #000;
+  }
+
+  /* Hard safety net: never show above the mobile breakpoint, regardless of JS state. */
+  @media (min-width: 769px) {
+    #mobile-intro-video {
+      display: none !important;
+    }
+  }
+
+  html.mobile-intro-lock,
+  html.mobile-intro-lock body {
+    overflow: hidden !important;
+    height: 100%;
+    overscroll-behavior: none;
+  }
+{% endstyle %}
+
+<script>
+  (function () {
+    var overlay = document.getElementById('mobile-intro-video');
+    if (!overlay) return;
+
+    var STORAGE_KEY = 'skyIntroVideoPlayed';
+    var MOBILE_QUERY = '(max-width: 768px)';
+    var READY_TIMEOUT_MS = 4000;
+    var FALLBACK_MAX_MS = 15000;
+    var html = document.documentElement;
+
+    var isMobile;
+    try {
+      isMobile = window.matchMedia(MOBILE_QUERY).matches;
+    } catch (e) {
+      isMobile = window.innerWidth <= 768;
+    }
+
+    var alreadyPlayed;
+    try {
+      alreadyPlayed = window.sessionStorage.getItem(STORAGE_KEY) === '1';
+    } catch (e) {
+      alreadyPlayed = false;
+    }
+
+    // Desktop/tablet, or already played this session: bail out with zero footprint.
+    if (!isMobile || alreadyPlayed) {
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      return;
+    }
+
+    var video = overlay.querySelector('video');
+    var source = overlay.querySelector('source');
+    var cleaned = false;
+    var readyTimer, maxTimer;
+
+    // Mark as played immediately so a slow/blocked video can never trigger a retry loop.
+    try {
+      window.sessionStorage.setItem(STORAGE_KEY, '1');
+    } catch (e) {}
+
+    overlay.classList.add('mobile-intro-video--active');
+    html.classList.add('mobile-intro-lock');
+
+    function cleanup() {
+      if (cleaned) return;
+      cleaned = true;
+      clearTimeout(readyTimer);
+      clearTimeout(maxTimer);
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      html.classList.remove('mobile-intro-lock');
+    }
+
+    function fadeOutAndRemove() {
+      if (cleaned || overlay.classList.contains('mobile-intro-video--hidden')) return;
+      overlay.classList.add('mobile-intro-video--hidden');
+      overlay.addEventListener('transitionend', cleanup, { once: true });
+      // Safety net in case transitionend never fires (e.g. tab backgrounded mid-fade).
+      setTimeout(cleanup, 900);
+    }
+
+    if (source && source.getAttribute('data-src')) {
+      source.src = source.getAttribute('data-src');
+    }
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.setAttribute('preload', 'auto');
+    if ('fetchPriority' in video) video.fetchPriority = 'high';
+
+    try {
+      video.load();
+    } catch (e) {}
+
+    // Fallback: video failed to become playable in a reasonable time (slow network, blocked
+    // resource, etc.) - reveal the site rather than holding it hostage.
+    readyTimer = setTimeout(function () {
+      if (video.readyState < 2) fadeOutAndRemove();
+    }, READY_TIMEOUT_MS);
+
+    video.addEventListener(
+      'loadedmetadata',
+      function () {
+        clearTimeout(readyTimer);
+        var ms =
+          isFinite(video.duration) && video.duration > 0
+            ? video.duration * 1000
+            : FALLBACK_MAX_MS;
+        // Fallback: ultimate ceiling in case the `ended` event never fires.
+        maxTimer = setTimeout(fadeOutAndRemove, ms + 2000);
+      },
+      { once: true }
+    );
+
+    video.addEventListener('ended', fadeOutAndRemove);
+    video.addEventListener('error', fadeOutAndRemove);
+
+    var playPromise;
+    try {
+      playPromise = video.play();
+    } catch (e) {
+      fadeOutAndRemove();
+    }
+    // Fallback: autoplay rejected (policy, low-power mode, etc.).
+    if (playPromise && typeof playPromise.catch === 'function') {
+      playPromise.catch(fadeOutAndRemove);
+    }
+  })();
+</script>
