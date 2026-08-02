@@ -1,6 +1,303 @@
+{% doc %}
+  @prompt
+    fast image carsel 
+    dont stop until user click
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-fast-carousel-{{ ai_gen_id }} {
+    display: block;
+    width: {{ block.settings.desktop_width_percent }}%;
+    max-width: 100%;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .ai-fast-carousel-track-{{ ai_gen_id }} {
+    display: flex;
+    gap: {{ block.settings.image_gap }}px;
+    will-change: transform;
+  }
+
+  .ai-fast-carousel-track-{{ ai_gen_id }}.ai-fast-carousel-animating-{{ ai_gen_id }} {
+    animation: ai-fast-carousel-scroll-{{ ai_gen_id }} {{ block.settings.scroll_speed }}s linear infinite;
+  }
+
+  .ai-fast-carousel-track-{{ ai_gen_id }}.ai-fast-carousel-paused-{{ ai_gen_id }} {
+    animation-play-state: paused;
+  }
+
+  .ai-fast-carousel-item-{{ ai_gen_id }} {
+    flex-shrink: 0;
+    width: {{ block.settings.image_width }}px;
+    height: {{ block.settings.image_height }}px;
+  }
+
+  .ai-fast-carousel-item-{{ ai_gen_id }} img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: {{ block.settings.image_border_radius }}px;
+    display: block;
+  }
+
+  .ai-fast-carousel-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: {{ block.settings.image_border_radius }}px;
+  }
+
+  .ai-fast-carousel-placeholder-{{ ai_gen_id }} svg {
+    width: 60%;
+    height: 60%;
+    opacity: 0.3;
+  }
+
+  @keyframes ai-fast-carousel-scroll-{{ ai_gen_id }} {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-fast-carousel-{{ ai_gen_id }} {
+      width: 100%;
+    }
+
+    .ai-fast-carousel-item-{{ ai_gen_id }} {
+      width: {{ block.settings.image_width | times: 0.7 }}px;
+      height: {{ block.settings.image_height | times: 0.7 }}px;
+    }
+  }
+{% endstyle %}
+
+<fast-carousel-{{ ai_gen_id }}
+  class="ai-fast-carousel-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="ai-fast-carousel-track-{{ ai_gen_id }} ai-fast-carousel-animating-{{ ai_gen_id }}">
+    {% liquid
+      assign images_array = ''
+      for i in (1..8)
+        assign image_key = 'image_' | append: i
+        assign current_image = block.settings[image_key]
+        if current_image != blank
+          assign images_array = images_array | append: i | append: ','
+        endif
+      endfor
+      assign images_array = images_array | split: ','
+      assign images_count = images_array.size
+    %}
+
+    {% if images_count > 0 %}
+      {% for j in (1..2) %}
+        {% for i in (1..8) %}
+          {% assign image_key = 'image_' | append: i %}
+          {% assign current_image = block.settings[image_key] %}
+          {% if current_image != blank %}
+            <div class="ai-fast-carousel-item-{{ ai_gen_id }}">
+              <img
+                src="{{ current_image | image_url: width: 600 }}"
+                alt="{{ current_image.alt | escape }}"
+                loading="lazy"
+                width="{{ block.settings.image_width }}"
+                height="{{ block.settings.image_height }}"
+              >
+            </div>
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    {% else %}
+      {% for j in (1..2) %}
+        {% for i in (1..8) %}
+          <div class="ai-fast-carousel-item-{{ ai_gen_id }}">
+            <div class="ai-fast-carousel-placeholder-{{ ai_gen_id }}">
+              {{ 'image' | placeholder_svg_tag }}
+            </div>
+          </div>
+        {% endfor %}
+      {% endfor %}
+    {% endif %}
+  </div>
+</fast-carousel-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class FastCarousel{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.track = null;
+        this.isPaused = false;
+      }
+
+      connectedCallback() {
+        this.track = this.querySelector('.ai-fast-carousel-track-{{ ai_gen_id }}');
+        this.setupEventListeners();
+      }
+
+      setupEventListeners() {
+        this.addEventListener('click', () => {
+          this.togglePause();
+        });
+
+        this.addEventListener('mouseenter', () => {
+          if (!this.isPaused) {
+            this.track.style.animationPlayState = 'paused';
+          }
+        });
+
+        this.addEventListener('mouseleave', () => {
+          if (!this.isPaused) {
+            this.track.style.animationPlayState = 'running';
+          }
+        });
+      }
+
+      togglePause() {
+        this.isPaused = !this.isPaused;
+        
+        if (this.isPaused) {
+          this.track.classList.add('ai-fast-carousel-paused-{{ ai_gen_id }}');
+        } else {
+          this.track.classList.remove('ai-fast-carousel-paused-{{ ai_gen_id }}');
+        }
+      }
+    }
+
+    customElements.define('fast-carousel-{{ ai_gen_id }}', FastCarousel{{ ai_gen_id }});
+  })();
+</script>
+
 {% schema %}
- {
-   "name": "AI_Block",
-   "tag": "shopify-ai-generated-block"
- }
+{
+  "name": "Fast image carousel",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Images"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_1",
+      "label": "Image 1"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_2",
+      "label": "Image 2"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_3",
+      "label": "Image 3"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_4",
+      "label": "Image 4"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_5",
+      "label": "Image 5"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_6",
+      "label": "Image 6"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_7",
+      "label": "Image 7"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_8",
+      "label": "Image 8"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "desktop_width_percent",
+      "label": "Desktop width",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "image_width",
+      "label": "Image width",
+      "min": 100,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "default": 300
+    },
+    {
+      "type": "range",
+      "id": "image_height",
+      "label": "Image height",
+      "min": 100,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "default": 300
+    },
+    {
+      "type": "range",
+      "id": "image_gap",
+      "label": "Gap between images",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "label": "Image border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "range",
+      "id": "scroll_speed",
+      "label": "Scroll speed",
+      "min": 5,
+      "max": 50,
+      "step": 5,
+      "unit": "s",
+      "default": 20
+    }
+  ],
+  "presets": [
+    {
+      "name": "Fast image carousel"
+    }
+  ]
+}
 {% endschema %}
