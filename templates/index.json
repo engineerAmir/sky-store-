@@ -9,29 +9,40 @@
  */
 {
   "sections": {
-    "178568133647b3ee06": {
+    "1785681937862a8561": {
       "type": "_blocks",
       "blocks": {
-        "ai_gen_block_d436528_WpYcqK": {
-          "type": "ai_gen_block_d436528",
+        "ai_gen_block_60ae182_EcwHnr": {
+          "type": "ai_gen_block_60ae182",
           "settings": {
             "image_1": "shopify://shop_images/WhatsApp_Image_2026-08-02_at_11.06.19_AM.jpg",
             "image_2": "shopify://shop_images/WhatsApp_Image_2026-08-02_at_11.06.18_AM_1.jpg",
             "image_3": "shopify://shop_images/WhatsApp_Image_2026-08-02_at_11.06.19_AM_1.jpg",
             "image_4": "shopify://shop_images/WhatsApp_Image_2026-08-02_at_11.06.18_AM.jpg",
             "image_5": "shopify://shop_images/light_in_the_night.jpg",
-            "mobile_height": 70,
-            "fade_duration": 1,
-            "autoplay": true,
-            "autoplay_interval": 5,
-            "dot_color": "#ffffff",
-            "placeholder_color": "#f4f4f4"
+            "heading": "Welcome to Our Store",
+            "subheading": "Discover amazing products and exclusive deals",
+            "button_label": "Shop Now",
+            "button_link": "",
+            "autoplay_interval": 2,
+            "fade_duration": 0.5,
+            "show_dots": true,
+            "overlay_opacity": 45,
+            "text_color": "#ffffff",
+            "heading_size": 64,
+            "subheading_size": 20,
+            "button_background": "#ffffff",
+            "button_text_color": "#000000",
+            "button_hover_background": "#f0f0f0",
+            "button_font_size": 16,
+            "button_radius": 8,
+            "dot_active_color": "#ffffff"
           },
           "blocks": {}
         }
       },
       "block_order": [
-        "ai_gen_block_d436528_WpYcqK"
+        "ai_gen_block_60ae182_EcwHnr"
       ],
       "settings": {
         "content_direction": "column",
@@ -39,11 +50,11 @@
         "horizontal_alignment": "flex-start",
         "vertical_alignment": "center",
         "align_baseline": false,
-        "horizontal_alignment_flex_direction_column": "center",
+        "horizontal_alignment_flex_direction_column": "flex-start",
         "vertical_alignment_flex_direction_column": "center",
         "gap": 12,
-        "section_width": "full-width",
-        "section_height": "full-screen",
+        "section_width": "page-width",
+        "section_height": "",
         "section_height_custom": 50,
         "background_media": "none",
         "background_color": "",
@@ -263,7 +274,7 @@
     }
   },
   "order": [
-    "178568133647b3ee06",
+    "1785681937862a8561",
     "product_list_fa6P9H"
   ]
 }
