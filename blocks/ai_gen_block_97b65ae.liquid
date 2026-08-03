@@ -1,9 +1,9 @@
 {% doc %}
   @prompt
     Create a premium transparent header for my Shopify store.
-    
+
     Requirements:
-    
+
     • Full-width sticky header with transparent background on page load.
     • Header must stay fixed at the top while scrolling.
     • Smooth transition (300ms).
@@ -15,19 +15,19 @@
     • When at the top:
       - Background is completely transparent.
       - Logo, menu links, and icons are white.
-    
+
     Layout:
     • Left: Hamburger menu (mobile) / Main navigation (desktop)
     • Center: Store logo
     • Right: Cart icon with live cart count badge
-    
+
     Navigation:
     • Desktop horizontal menu.
     • Mobile full-screen slide-in menu.
     • Animated hamburger to close icon.
     • Support nested navigation.
     • Close on ESC, outside click, or menu button.
-    
+
     Design:
     • Modern luxury style.
     • Apple-inspired minimal design.
@@ -36,14 +36,14 @@
     • Accessibility compliant.
     • Keyboard navigation.
     • ARIA labels.
-    
+
     Performance:
     • Lightweight.
     • No external libraries.
     • Optimized for Shopify Online Store 2.0.
     • No layout shift.
     • Fast loading.
-    
+
     Theme Settings:
     • Logo upload
     • Logo width
@@ -59,14 +59,17 @@
     • Show search icon
     • Show account icon
     • Show cart icon
-    
+
     Technical Requirements:
     • All header elements must have z-index: 100.
     • Header container must have z-index: 100.
     • Mobile menu overlay must have z-index: 101.
     • Cart drawer must remain above the header.
     • The header must work correctly over hero videos, sliders, and banners.
-    
+    • Logo, hamburger toggle, and icons (search/account/cart) each carry an
+      explicit position:relative + z-index:100 so they stack correctly among
+      themselves within the header's own stacking context.
+
     Generate a complete production-ready Shopify section using Liquid, HTML, CSS, JavaScript, and a complete schema. The code should be clean, modular, responsive, and ready to publish without additional modifications.
 {% enddoc %}
 {% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
@@ -128,6 +131,8 @@
   .ai-premium-header-logo-{{ ai_gen_id }} {
     display: block;
     line-height: 0;
+    position: relative;
+    z-index: 100;
   }
 
   .ai-premium-header-logo-{{ ai_gen_id }} img {
@@ -146,7 +151,7 @@
     position: relative;
     width: 40px;
     height: 40px;
-    z-index: 102;
+    z-index: 100;
   }
 
   .ai-premium-header-hamburger-line-{{ ai_gen_id }} {
@@ -277,6 +282,7 @@
     color: {{ block.settings.transparent_text_color }};
     transition: opacity 300ms ease, color 300ms ease;
     position: relative;
+    z-index: 100;
   }
 
   .ai-premium-header-{{ ai_gen_id }}.scrolled .ai-premium-header-icon-{{ ai_gen_id }} {
