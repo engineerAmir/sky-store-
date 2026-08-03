@@ -1,6 +1,443 @@
+{% doc %}
+  @prompt
+    Create a premium, production-ready Shopify transparent header section with clean, optimized code.
+    , put cart icon and menu, content index 100 , i need all header content over all website content
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-transparent-header-{{ ai_gen_id }} {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    width: 100%;
+    transition: background-color 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .ai-transparent-header-{{ ai_gen_id }}.scrolled {
+    background-color: {{ block.settings.scrolled_background_color }};
+    backdrop-filter: blur({{ block.settings.blur_amount }}px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, {{ block.settings.shadow_opacity }});
+  }
+
+  .ai-transparent-header-container-{{ ai_gen_id }} {
+    max-width: {{ block.settings.max_width }}px;
+    margin: 0 auto;
+    padding: {{ block.settings.padding_vertical }}px {{ block.settings.padding_horizontal }}px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .ai-transparent-header-logo-{{ ai_gen_id }} {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    z-index: 10001;
+    position: relative;
+  }
+
+  .ai-transparent-header-logo-{{ ai_gen_id }} img {
+    height: {{ block.settings.logo_height }}px;
+    width: auto;
+    display: block;
+    transition: opacity 0.3s ease;
+  }
+
+  .ai-transparent-header-logo-{{ ai_gen_id }} a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  .ai-transparent-header-actions-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    gap: {{ block.settings.action_spacing }}px;
+    flex-shrink: 0;
+    z-index: 10001;
+    position: relative;
+  }
+
+  .ai-transparent-header-action-{{ ai_gen_id }} {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: {{ block.settings.icon_color }};
+    transition: opacity 0.3s ease, color 0.3s ease;
+  }
+
+  .ai-transparent-header-{{ ai_gen_id }}.scrolled .ai-transparent-header-action-{{ ai_gen_id }} {
+    color: {{ block.settings.scrolled_icon_color }};
+  }
+
+  .ai-transparent-header-action-{{ ai_gen_id }}:hover {
+    opacity: 0.7;
+  }
+
+  .ai-transparent-header-action-{{ ai_gen_id }} svg {
+    width: {{ block.settings.icon_size }}px;
+    height: {{ block.settings.icon_size }}px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-transparent-header-logo-{{ ai_gen_id }} img {
+      height: {{ block.settings.logo_height_mobile }}px;
+    }
+
+    .ai-transparent-header-container-{{ ai_gen_id }} {
+      padding: {{ block.settings.padding_vertical_mobile }}px {{ block.settings.padding_horizontal_mobile }}px;
+    }
+  }
+
+  .ai-transparent-header-mobile-menu-{{ ai_gen_id }} {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: {{ block.settings.mobile_menu_background }};
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    padding: 80px 20px 20px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .ai-transparent-header-mobile-menu-{{ ai_gen_id }}.active {
+    transform: translateX(0);
+  }
+
+  .ai-transparent-header-mobile-close-{{ ai_gen_id }} {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    color: {{ block.settings.mobile_menu_text_color }};
+  }
+
+  .ai-transparent-header-mobile-close-{{ ai_gen_id }} svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+  }
+{% endstyle %}
+
+<transparent-header-{{ ai_gen_id }}
+  class="ai-transparent-header-{{ ai_gen_id }}"
+  data-scroll-threshold="{{ block.settings.scroll_threshold }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="ai-transparent-header-container-{{ ai_gen_id }}">
+    <div class="ai-transparent-header-logo-{{ ai_gen_id }}">
+      <a href="/">
+        {% if block.settings.logo %}
+          <img
+            src="{{ block.settings.logo | image_url: width: 400 }}"
+            alt="{{ shop.name }}"
+            width="{{ block.settings.logo.width }}"
+            height="{{ block.settings.logo.height }}"
+            loading="eager"
+          >
+        {% else %}
+          <span style="color: {{ block.settings.icon_color }}; font-size: 20px; font-weight: 700;">{{ shop.name }}</span>
+        {% endif %}
+      </a>
+    </div>
+
+    <div class="ai-transparent-header-actions-{{ ai_gen_id }}">
+      <a href="/cart" class="ai-transparent-header-action-{{ ai_gen_id }}" aria-label="Cart">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+      </a>
+
+      <button
+        class="ai-transparent-header-action-{{ ai_gen_id }}"
+        aria-label="Open menu"
+        aria-expanded="false"
+        data-menu-toggle
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="ai-transparent-header-mobile-menu-{{ ai_gen_id }}">
+    <button class="ai-transparent-header-mobile-close-{{ ai_gen_id }}" aria-label="Close menu">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+</transparent-header-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class TransparentHeader{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.scrollThreshold = parseInt(this.dataset.scrollThreshold) || 50;
+        this.mobileToggle = this.querySelector('[data-menu-toggle]');
+        this.mobileMenu = this.querySelector('.ai-transparent-header-mobile-menu-{{ ai_gen_id }}');
+        this.mobileClose = this.querySelector('.ai-transparent-header-mobile-close-{{ ai_gen_id }}');
+      }
+
+      connectedCallback() {
+        this.handleScroll = this.handleScroll.bind(this);
+        this.openMobileMenu = this.openMobileMenu.bind(this);
+        this.closeMobileMenu = this.closeMobileMenu.bind(this);
+
+        window.addEventListener('scroll', this.handleScroll);
+        this.mobileToggle.addEventListener('click', this.openMobileMenu);
+        this.mobileClose.addEventListener('click', this.closeMobileMenu);
+
+        this.handleScroll();
+      }
+
+      disconnectedCallback() {
+        window.removeEventListener('scroll', this.handleScroll);
+        this.mobileToggle.removeEventListener('click', this.openMobileMenu);
+        this.mobileClose.removeEventListener('click', this.closeMobileMenu);
+      }
+
+      handleScroll() {
+        if (window.scrollY > this.scrollThreshold) {
+          this.classList.add('scrolled');
+        } else {
+          this.classList.remove('scrolled');
+        }
+      }
+
+      openMobileMenu() {
+        this.mobileMenu.classList.add('active');
+        this.mobileToggle.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+      }
+
+      closeMobileMenu() {
+        this.mobileMenu.classList.remove('active');
+        this.mobileToggle.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+      }
+    }
+
+    customElements.define('transparent-header-{{ ai_gen_id }}', TransparentHeader{{ ai_gen_id }});
+  })();
+</script>
+
 {% schema %}
- {
-   "name": "AI_Block",
-   "tag": "shopify-ai-generated-block"
- }
+{
+  "name": "Transparent header",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Logo"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo image"
+    },
+    {
+      "type": "range",
+      "id": "logo_height",
+      "label": "Desktop height",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "logo_height_mobile",
+      "label": "Mobile height",
+      "min": 20,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Actions"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "label": "Icon size",
+      "min": 16,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "action_spacing",
+      "label": "Icon spacing",
+      "min": 5,
+      "max": 30,
+      "step": 5,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Icon color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "scrolled_background_color",
+      "label": "Scrolled background",
+      "default": "rgba(255, 255, 255, 0.9)"
+    },
+    {
+      "type": "color",
+      "id": "scrolled_icon_color",
+      "label": "Scrolled icon color",
+      "default": "#000000"
+    },
+    {
+      "type": "header",
+      "content": "Scroll behavior"
+    },
+    {
+      "type": "range",
+      "id": "scroll_threshold",
+      "label": "Scroll threshold",
+      "min": 10,
+      "max": 200,
+      "step": 10,
+      "unit": "px",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "blur_amount",
+      "label": "Blur amount",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "shadow_opacity",
+      "label": "Shadow opacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.1,
+      "default": 0.1
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Max width",
+      "min": 1000,
+      "max": 1600,
+      "step": 100,
+      "unit": "px",
+      "default": 1400
+    },
+    {
+      "type": "range",
+      "id": "padding_vertical",
+      "label": "Desktop vertical padding",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "padding_horizontal",
+      "label": "Desktop horizontal padding",
+      "min": 10,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_vertical_mobile",
+      "label": "Mobile vertical padding",
+      "min": 10,
+      "max": 40,
+      "step": 5,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "padding_horizontal_mobile",
+      "label": "Mobile horizontal padding",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Mobile menu"
+    },
+    {
+      "type": "color",
+      "id": "mobile_menu_background",
+      "label": "Background color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "mobile_menu_text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Transparent header"
+    }
+  ]
+}
 {% endschema %}
