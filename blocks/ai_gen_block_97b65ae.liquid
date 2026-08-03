@@ -436,6 +436,31 @@
       display: none;
     }
   }
+
+  /* ------------------------------------------------------------------
+     Content spacing fix
+     This header is position:fixed, so it's removed from normal page flow
+     and does NOT push page content down automatically.
+     - On pages where the FIRST section is the fullscreen hero slider,
+       no extra spacing is added (the hero is designed to sit full-height
+       behind this transparent header).
+     - On any other page (e.g. Catalog, Products, Contact — pages with no
+       hero), the main content is pushed down by the header height so it
+       isn't hidden underneath the fixed header.
+  ------------------------------------------------------------------- */
+  #MainContent {
+    padding-top: 0;
+  }
+
+  #MainContent > .shopify-section:first-child:not(:has(.ai-fullscreen-hero)) {
+    margin-top: {{ block.settings.header_height }}px;
+  }
+
+  @media screen and (max-width: 989px) {
+    #MainContent > .shopify-section:first-child:not(:has(.ai-fullscreen-hero)) {
+      margin-top: {{ block.settings.header_height | times: 0.8 }}px;
+    }
+  }
 {% endstyle %}
 
 <premium-header-{{ ai_gen_id }}
