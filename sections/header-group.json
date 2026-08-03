@@ -101,6 +101,7 @@
         "ai_gen_block_97b65ae_XVFgBb": {
           "type": "ai_gen_block_97b65ae",
           "settings": {
+            "logo": "shopify://shop_images/1785680891349-removebg-preview.png",
             "logo_width": 120,
             "header_height": 80,
             "enable_sticky": true,
